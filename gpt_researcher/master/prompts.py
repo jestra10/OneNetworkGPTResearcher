@@ -18,7 +18,11 @@ def generate_search_queries_prompt(question: str, parent_query: str, report_type
     else:
         task = question
 
-    return f'Write {max_iterations} google search queries to search online that form an objective opinion from the following task: "{task}"' \
+    return f'Write {max_iterations} google search queries to search online that find the following information [' \
+           f'Contact email (using company email, not a personal gmail or other commercial mail),' \
+           f'phone number (company phone number, not personal), country, full corporate mailing address,'\
+           f'corporate website address, Tax Identifier (whatever tax id is appropriate in their country), DUNS, and SCAC (if NA Carrier).] about each "{task}"' \
+           f'Please find a valid Tax Identifier (whatever tax id is appropriate in their country) and SCAC (if NA Carrier) as it is very important information.' \
            f'Use the current date if needed: {datetime.now().strftime("%B %d, %Y")}.\n' \
            f'Also include in the queries specified task details such as locations, names, etc.\n' \
            f'You must respond with a list of strings in the following format: ["query 1", "query 2", "query 3"].\n' \
@@ -53,15 +57,18 @@ def generate_report_prompt(question: str, context, report_source: str, report_fo
     return f'Information: """{context}"""\n\n' \
            f'Using the above information, answer the following' \
            f' query or task: "{question}" in a detailed report --' \
-           " The report should focus on the answer to the query, should be well structured, informative," \
-           f" in depth and comprehensive, with facts and numbers if available and a minimum of {total_words} words.\n" \
-           "You should strive to write the report as long as you can using all relevant and necessary information provided.\n" \
-           "You must write the report with markdown syntax.\n " \
+           " The report should focus on finding information on the following: Contact email (using company email, not a personal gmail or other commercial mail)," \
+           f"phone number (company phone number, not personal), country, full corporate mailing address,"\
+           f"corporate website address, Tax Identifier (whatever tax id is appropriate in their country), DUNS, and SCAC (if NA Carrier)." \
+           "You should strive to find a factual tax identifier.\n" \
+           "You should strive to write the report using all relevant and necessary information provided.\n" \
+           "You must write the report with markdown syntax and provide a JSON format of the information. The JSON keys for each company should be the following:" \
+           "Contact email, Phone number, Country, Mailing address, Website, Tax identifier, DUNS, SCAC. In the JSON, only provide one answer per key." \
+           "If there are multiple different values for the same key, only provide the most general or relevant one.\n " \
            f"Use an unbiased and journalistic tone. \n" \
-           "You MUST determine your own concrete and valid opinion based on the given information. Do NOT deter to general and meaningless conclusions.\n" \
            f"{reference_prompt}"\
             f"You MUST write the report in {report_format} format.\n " \
-            f"Cite search results using inline notations. Only cite the most \
+            f"Cite search results using inline notations but do not include citations in the JSON. Only cite the most \
             relevant results that answer the query accurately. Place these citations at the end \
             of the sentence or paragraph that reference them.\n"\
             f"Please do your best, this is very important to my career. " \
@@ -115,7 +122,8 @@ def generate_outline_report_prompt(question, context, report_source: str, report
     return f'"""{context}""" Using the above information, generate an outline for a research report in Markdown syntax' \
            f' for the following question or topic: "{question}". The outline should provide a well-structured framework' \
            ' for the research report, including the main sections, subsections, and key points to be covered.' \
-           f' The research report should be detailed, informative, in-depth, and a minimum of {total_words} words.' \
+           ' If there is a JSON section, put it at the top of the report.' \
+           f' The research report should be detailed, informative, and in-depth.' \
            ' Use appropriate Markdown syntax to format the outline and ensure readability.'
 
 
